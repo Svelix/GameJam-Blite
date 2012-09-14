@@ -1,2 +1,4 @@
-*.js
-*.html
+public/*.js
+public/*.html
+public/*.css
+.sass-cache

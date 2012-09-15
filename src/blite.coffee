@@ -119,7 +119,7 @@ class Ball extends GameObj
 class Platform extends GameObj
   constructor: (@x, @y, @color) ->
     bodyDef.type = b2Body.b2_kinematicBody
-    bodyDef.linearVelocity = new b2Vec2 0, 1
+    bodyDef.linearVelocity = new b2Vec2 0, 2
     fixDef.shape = new b2PolygonShape
     fixDef.shape.SetAsBox(2, 0.25)
     bodyDef.position.x = x
@@ -134,6 +134,7 @@ class Platform extends GameObj
     position = @physicsBody.GetPosition()
     if position.y > b2heigth + 0.25
       position.y = -0.25
+      position.x = Math.random() * b2width
       @physicsBody.SetPosition(position)
     super
 

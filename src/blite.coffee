@@ -52,6 +52,8 @@ setupDebugDraw = ->
   debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit)
   world.SetDebugDraw(debugDraw)
 
+bodyDef = fixDef = null
+
 setupB2 = ->
   world = new b2World gravity
 
@@ -79,20 +81,9 @@ setupB2 = ->
   createStaticBox(b2width, 0, b2width+0.5, b2heigth)
   createStaticBox(-0.5, b2heigth, b2width + 0.5, b2heigth + 0.5)
 
-  createBall = (x, y, color) ->
-    bodyDef.type = b2Body.b2_dynamicBody
-    fixDef.shape = new b2CircleShape(0.5)
 
-    bodyDef.position.x = x
-    bodyDef.position.y = y
-    physicsBody = world.CreateBody(bodyDef)
-    physicsBody.CreateFixture(fixDef)
-    div = $("<div class='ball #{color}'/>")
-    playground.append div
-    ball = new GameObj(div, physicsBody)
-
-  ball1 = createBall(b2width / 2 - 2, b2heigth - 2, 'white')
-  ball2 = createBall(b2width / 2 + 2, b2heigth - 2, 'black')
+  ball1 = new Ball(b2width / 2 - 2, b2heigth - 2, 'white')
+  ball2 = new Ball(b2width / 2 + 2, b2heigth - 2, 'black')
 
 class GameObj
   constructor: (@div, @physicsBody) ->
@@ -103,6 +94,20 @@ class GameObj
     top = height - @y * SCALE - @div.height()/2
     @div.css 'left',  left + 'px'
     @div.css 'top', top + 'px'
+
+class Ball extends GameObj
+  constructor: (@x, @y, @color) ->
+    bodyDef.type = b2Body.b2_dynamicBody
+    fixDef.shape = new b2CircleShape(0.5)
+
+    bodyDef.position.x = x
+    bodyDef.position.y = y
+    physicsBody = world.CreateBody(bodyDef)
+    physicsBody.CreateFixture(fixDef)
+    div = $("<div class='ball #{color}'/>")
+    playground.append div
+    super(div, physicsBody)
+
 
 minfps = 2000
 maxfps = 0

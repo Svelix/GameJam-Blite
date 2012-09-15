@@ -15,9 +15,19 @@ MINASPECT = 0.5
 
 SCALE = 50
 
-ball1 = ball2 = null
+lastTime = ball1 = ball2 = null
 world = null
 gravity = new b2Vec2 0, 0
+
+requestAnimFrame = (() ->
+  window.requestAnimationFrame       ||
+  window.webkitRequestAnimationFrame ||
+  window.mozRequestAnimationFrame    ||
+  window.oRequestAnimationFrame      ||
+  window.msRequestAnimationFrame     ||
+  (callback, element) ->
+    window.setTimeout(callback, 1000 / 60)
+)()
 
 init = ->
   #if setupOrientationHandler()
@@ -83,7 +93,8 @@ setupB2 = ->
   ball1 = createBall(b2width / 2 - 2, b2heigth - 2, 'white')
   ball2 = createBall(b2width / 2 + 2, b2heigth - 2, 'black')
 
-  window.setInterval(update, 1000 / 60)
+  lastTime = Date.now()
+  requestAnimFrame update
 
 class GameObj
   constructor: (@div, @physicsBody) ->
@@ -95,9 +106,19 @@ class GameObj
     @div.css 'left',  left + 'px'
     @div.css 'top', top + 'px'
 
+minfps = 2000
+maxfps = 0
 update = ->
+  requestAnimFrame update
+  now = Date.now()
+  step = (now - lastTime) / 1000
+  fps = Math.round(1/step)
+  minfps = Math.min minfps, fps
+  maxfps = Math.max maxfps, fps
+  $('#fps').html "FPS: #{fps} min:#{minfps} max:#{maxfps}"
+  lastTime = now
   world.SetGravity(gravity)
-  world.Step( 1 / 60 ,  10 ,  10)
+  world.Step( step ,  10 ,  10)
   ball1.update()
   $('#position1').html "X:#{ball1.x} Y#{ball1.y}"
   ball2.update()

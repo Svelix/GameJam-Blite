@@ -15,6 +15,8 @@ MINASPECT = 0.5
 
 SCALE = 50
 
+DEBUG = false
+
 lastTime = ball1 = ball2 = null
 world = null
 gravity = new b2Vec2 0, 0
@@ -34,6 +36,21 @@ init = ->
   if setupMotionHandler()
     setupPlayground()
     setupB2()
+    setupDebugDraw() if DEBUG
+
+    lastTime = Date.now()
+    requestAnimFrame update
+
+setupDebugDraw = ->
+  canvas = $("<canvas id='canvas' style='width:#{width} height:#{height} position:absolute top:0 left:0'/>")
+  playground.append canvas
+  debugDraw = new b2DebugDraw()
+  debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"))
+  debugDraw.SetDrawScale(5)
+  debugDraw.SetFillAlpha(0.3)
+  debugDraw.SetLineThickness(1.0)
+  debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit)
+  world.SetDebugDraw(debugDraw)
 
 setupB2 = ->
   world = new b2World gravity
@@ -48,35 +65,19 @@ setupB2 = ->
   b2width = width / SCALE
   b2heigth = height / SCALE
 
-  # create ground
-  bodyDef.type = b2Body.b2_staticBody
-  bodyDef.position.x = -0.5
-  bodyDef.position.y = -0.5
-  fixDef.shape = new b2PolygonShape
-  fixDef.shape.SetAsBox(b2width + 1, 0.5)
-  world.CreateBody(bodyDef).CreateFixture(fixDef)
+  createStaticBox = (x1, y1, x2 , y2) ->
+    bodyDef.type = b2Body.b2_staticBody
+    bodyDef.position.x = (x1 + x2)/2
+    bodyDef.position.y = (y1 + y2)/2
+    fixDef.shape = new b2PolygonShape
+    fixDef.shape.SetAsBox((x2-x1)/2, (y2-y1)/2)
+    world.CreateBody(bodyDef).CreateFixture(fixDef)
 
-  # create walls
-  bodyDef.type = b2Body.b2_staticBody
-  bodyDef.position.x = -0.5
-  bodyDef.position.y = 0
-  fixDef.shape = new b2PolygonShape
-  fixDef.shape.SetAsBox(0.5, b2heigth)
-  world.CreateBody(bodyDef).CreateFixture(fixDef)
-
-  bodyDef.type = b2Body.b2_staticBody
-  bodyDef.position.x = b2width + 0.5
-  bodyDef.position.y = 0
-  fixDef.shape = new b2PolygonShape
-  fixDef.shape.SetAsBox(0.5, b2heigth)
-  world.CreateBody(bodyDef).CreateFixture(fixDef)
-
-  bodyDef.type = b2Body.b2_staticBody
-  bodyDef.position.x = 0
-  bodyDef.position.y = b2heigth + 0.5
-  fixDef.shape = new b2PolygonShape
-  fixDef.shape.SetAsBox(b2width, 0.5)
-  world.CreateBody(bodyDef).CreateFixture(fixDef)
+  # create ground and walls
+  createStaticBox(-0.5, -0.5, b2width + 0.5, 0)
+  createStaticBox(-0.5, 0, 0, b2heigth)
+  createStaticBox(b2width, 0, b2width+0.5, b2heigth)
+  createStaticBox(-0.5, b2heigth, b2width + 0.5, b2heigth + 0.5)
 
   createBall = (x, y, color) ->
     bodyDef.type = b2Body.b2_dynamicBody
@@ -92,9 +93,6 @@ setupB2 = ->
 
   ball1 = createBall(b2width / 2 - 2, b2heigth - 2, 'white')
   ball2 = createBall(b2width / 2 + 2, b2heigth - 2, 'black')
-
-  lastTime = Date.now()
-  requestAnimFrame update
 
 class GameObj
   constructor: (@div, @physicsBody) ->
@@ -123,6 +121,7 @@ update = ->
   $('#position1').html "X:#{ball1.x} Y#{ball1.y}"
   ball2.update()
   $('#position2').html "X:#{ball2.x} Y#{ball2.y}"
+  world.DrawDebugData() if DEBUG
   world.ClearForces()
 
 setupOrientationHandler = ->
@@ -174,14 +173,12 @@ setupPlayground = ->
   aspect = width / height
   if aspect > MAXASPECT
     width = height * MAXASPECT
-    playground.width width
   if aspect < MINASPECT
     height = width / MINASPECT
-    playground.height height
+  playground.width width
+  playground.height height
   bodyWith = $('body').width()
   playground.css 'left', (bodyWith - width) / 2 + 'px'
-
-
 
 
 deviceOrientationHandler = (tiltLR, tiltFB, dir, motUD) ->

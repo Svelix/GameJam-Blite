@@ -7,7 +7,7 @@ body
   height: 100%
 
 #playground
-  background-color: #E00
+  background-color: #555
   height: 100%
   width: 100%
   position: absolute
@@ -17,7 +17,10 @@ body
   height: 50px
   right: 10px
   position: absolute
-  background: red
   +border-radius(50px)
+
+.ball.black
   +background-image(radial-gradient(32px 14px, white 2px, black 18px))
 
+.ball.white
+  +background-image(radial-gradient(32px 14px, black 2px, white 18px))

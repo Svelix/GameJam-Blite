@@ -68,7 +68,7 @@ setupB2 = ->
   fixDef.shape.SetAsBox(b2width, 0.5)
   world.CreateBody(bodyDef).CreateFixture(fixDef)
 
-  createBall = (x, y) ->
+  createBall = (x, y, color) ->
     bodyDef.type = b2Body.b2_dynamicBody
     fixDef.shape = new b2CircleShape(0.5)
 
@@ -76,12 +76,12 @@ setupB2 = ->
     bodyDef.position.y = y
     physicsBody = world.CreateBody(bodyDef)
     physicsBody.CreateFixture(fixDef)
-    div = $("<div class='ball'/>")
+    div = $("<div class='ball #{color}'/>")
     playground.append div
     ball = new GameObj(div, physicsBody)
 
-  ball1 = createBall(b2width / 2 - 2, b2heigth - 2)
-  ball2 = createBall(b2width / 2 + 2, b2heigth - 2)
+  ball1 = createBall(b2width / 2 - 2, b2heigth - 2, 'white')
+  ball2 = createBall(b2width / 2 + 2, b2heigth - 2, 'black')
 
   window.setInterval(update, 1000 / 60)
 

@@ -44,6 +44,8 @@ setupPlayground = ->
   if aspect < MINASPECT
     height = width / MINASPECT
     playground.height height
+  bodyWith = $('body').width()
+  playground.css 'left', (bodyWith - width) / 2 + 'px'
 
 
 

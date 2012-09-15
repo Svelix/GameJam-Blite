@@ -17,9 +17,17 @@ SCALE = 50
 
 DEBUG = false
 
-lastTime = ball1 = ball2 = null
+lastTime = null
+ball1 = null
+ball2 = null
+platform1 = null
 world = null
 gravity = new b2Vec2 0, 0
+bodyDef = null
+fixDef = null
+b2heigth = null
+b2width = null
+
 
 requestAnimFrame = (() ->
   window.requestAnimationFrame       ||
@@ -52,8 +60,6 @@ setupDebugDraw = ->
   debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit)
   world.SetDebugDraw(debugDraw)
 
-bodyDef = fixDef = null
-
 setupB2 = ->
   world = new b2World gravity
 
@@ -85,6 +91,8 @@ setupB2 = ->
   ball1 = new Ball(b2width / 2 - 2, b2heigth - 2, 'white')
   ball2 = new Ball(b2width / 2 + 2, b2heigth - 2, 'black')
 
+  platform1 = new Platform(b2width /2, -0.25, 'white')
+
 class GameObj
   constructor: (@div, @physicsBody) ->
 
@@ -108,6 +116,27 @@ class Ball extends GameObj
     playground.append div
     super(div, physicsBody)
 
+class Platform extends GameObj
+  constructor: (@x, @y, @color) ->
+    bodyDef.type = b2Body.b2_kinematicBody
+    bodyDef.linearVelocity = new b2Vec2 0, 1
+    fixDef.shape = new b2PolygonShape
+    fixDef.shape.SetAsBox(2, 0.25)
+    bodyDef.position.x = x
+    bodyDef.position.y = y
+    physicsBody = world.CreateBody(bodyDef)
+    physicsBody.CreateFixture(fixDef)
+    div = $("<div class='platform #{color}'/>")
+    playground.append div
+    super(div, physicsBody)
+
+  update: ->
+    position = @physicsBody.GetPosition()
+    if position.y > b2heigth + 0.25
+      position.y = -0.25
+      @physicsBody.SetPosition(position)
+    super
+
 
 minfps = 2000
 maxfps = 0
@@ -126,6 +155,7 @@ update = ->
   $('#position1').html "X:#{ball1.x} Y#{ball1.y}"
   ball2.update()
   $('#position2').html "X:#{ball2.x} Y#{ball2.y}"
+  platform1.update()
   world.DrawDebugData() if DEBUG
   world.ClearForces()
 

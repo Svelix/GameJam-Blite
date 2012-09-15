@@ -15,7 +15,7 @@ MINASPECT = 0.5
 
 SCALE = 50
 
-ball = null
+ball1 = ball2 = null
 world = null
 gravity = new b2Vec2 0, 0
 
@@ -40,22 +40,22 @@ setupB2 = ->
 
   # create ground
   bodyDef.type = b2Body.b2_staticBody
-  bodyDef.position.x = 0
-  bodyDef.position.y = 0
+  bodyDef.position.x = -0.5
+  bodyDef.position.y = -0.5
   fixDef.shape = new b2PolygonShape
-  fixDef.shape.SetAsBox(b2width, 0.5)
+  fixDef.shape.SetAsBox(b2width + 1, 0.5)
   world.CreateBody(bodyDef).CreateFixture(fixDef)
 
   # create walls
   bodyDef.type = b2Body.b2_staticBody
-  bodyDef.position.x = 0
+  bodyDef.position.x = -0.5
   bodyDef.position.y = 0
   fixDef.shape = new b2PolygonShape
   fixDef.shape.SetAsBox(0.5, b2heigth)
   world.CreateBody(bodyDef).CreateFixture(fixDef)
 
   bodyDef.type = b2Body.b2_staticBody
-  bodyDef.position.x = b2width
+  bodyDef.position.x = b2width + 0.5
   bodyDef.position.y = 0
   fixDef.shape = new b2PolygonShape
   fixDef.shape.SetAsBox(0.5, b2heigth)
@@ -63,20 +63,25 @@ setupB2 = ->
 
   bodyDef.type = b2Body.b2_staticBody
   bodyDef.position.x = 0
-  bodyDef.position.y = b2heigth
+  bodyDef.position.y = b2heigth + 0.5
   fixDef.shape = new b2PolygonShape
   fixDef.shape.SetAsBox(b2width, 0.5)
   world.CreateBody(bodyDef).CreateFixture(fixDef)
 
-  # create Ball
-  bodyDef.type = b2Body.b2_dynamicBody
-  fixDef.shape = new b2CircleShape(1);
+  createBall = (x, y) ->
+    bodyDef.type = b2Body.b2_dynamicBody
+    fixDef.shape = new b2CircleShape(0.5)
 
-  bodyDef.position.x = b2width / 2
-  bodyDef.position.y = b2heigth - 2
-  physicsBody = world.CreateBody(bodyDef)
-  physicsBody.CreateFixture(fixDef)
-  ball = new GameObj($('#ball'), physicsBody)
+    bodyDef.position.x = x
+    bodyDef.position.y = y
+    physicsBody = world.CreateBody(bodyDef)
+    physicsBody.CreateFixture(fixDef)
+    div = $("<div class='ball'/>")
+    playground.append div
+    ball = new GameObj(div, physicsBody)
+
+  ball1 = createBall(b2width / 2 - 2, b2heigth - 2)
+  ball2 = createBall(b2width / 2 + 2, b2heigth - 2)
 
   window.setInterval(update, 1000 / 60)
 
@@ -84,15 +89,19 @@ class GameObj
   constructor: (@div, @physicsBody) ->
 
   update: ->
-    left = @physicsBody.GetPosition().x * SCALE - @div.width()/2
-    top = height - @physicsBody.GetPosition().y * SCALE - @div.height()/2
+    {@x, @y} = @physicsBody.GetPosition()
+    left = @x * SCALE - @div.width()/2
+    top = height - @y * SCALE - @div.height()/2
     @div.css 'left',  left + 'px'
     @div.css 'top', top + 'px'
 
 update = ->
   world.SetGravity(gravity)
   world.Step( 1 / 60 ,  10 ,  10)
-  ball.update()
+  ball1.update()
+  $('#position1').html "X:#{ball1.x} Y#{ball1.y}"
+  ball2.update()
+  $('#position2').html "X:#{ball2.x} Y#{ball2.y}"
   world.ClearForces()
 
 setupOrientationHandler = ->

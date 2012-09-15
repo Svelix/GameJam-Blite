@@ -21,6 +21,7 @@ lastTime = null
 ball1 = null
 ball2 = null
 platform1 = null
+platform2 = null
 world = null
 gravity = new b2Vec2 0, 0
 bodyDef = null
@@ -79,6 +80,8 @@ setupB2 = ->
     bodyDef.position.y = (y1 + y2)/2
     fixDef.shape = new b2PolygonShape
     fixDef.shape.SetAsBox((x2-x1)/2, (y2-y1)/2)
+    fixDef.filter.maskBits = 0xFF
+    fixDef.filter.categoryBits = 0xFF
     world.CreateBody(bodyDef).CreateFixture(fixDef)
 
   # create ground and walls
@@ -88,13 +91,29 @@ setupB2 = ->
   createStaticBox(-0.5, b2heigth, b2width + 0.5, b2heigth + 0.5)
 
 
-  ball1 = new Ball(b2width / 2 - 2, b2heigth - 2, 'white')
-  ball2 = new Ball(b2width / 2 + 2, b2heigth - 2, 'black')
+  ball1 = new Ball(b2width / 2 - 2, b2heigth - 2, true)
+  ball2 = new Ball(b2width / 2 + 2, b2heigth - 2, false)
 
-  platform1 = new Platform(b2width /2, -0.25, 'white')
+  platform1 = new Platform(b2width /2, -0.25, true)
+  platform2 = new Platform(b2width /2, -b2heigth /2 -0.25, false)
 
 class GameObj
-  constructor: (@div, @physicsBody) ->
+  constructor: (@div, @white) ->
+    bodyDef.position.x = @x
+    bodyDef.position.y = @y
+    if @white
+      @div.addClass('white')
+      fixDef.filter.categoryBits = 0x01
+      fixDef.filter.maskBits = 0x01
+      fixDef.filter.groupIndex = 1
+    else
+      @div.addClass('black')
+      fixDef.filter.categoryBits = 0x02
+      fixDef.filter.maskBits = 0x02
+      fixDef.filter.groupIndex = 2
+    @physicsBody = world.CreateBody(bodyDef)
+    @physicsBody.CreateFixture(fixDef)
+    playground.append @div
 
   update: ->
     {@x, @y} = @physicsBody.GetPosition()
@@ -104,31 +123,20 @@ class GameObj
     @div.css 'top', top + 'px'
 
 class Ball extends GameObj
-  constructor: (@x, @y, @color) ->
+  constructor: (@x, @y, @white) ->
     bodyDef.type = b2Body.b2_dynamicBody
     fixDef.shape = new b2CircleShape(0.5)
-
-    bodyDef.position.x = x
-    bodyDef.position.y = y
-    physicsBody = world.CreateBody(bodyDef)
-    physicsBody.CreateFixture(fixDef)
-    div = $("<div class='ball #{color}'/>")
-    playground.append div
-    super(div, physicsBody)
+    div = $("<div class='ball'/>")
+    super(div, @white)
 
 class Platform extends GameObj
-  constructor: (@x, @y, @color) ->
+  constructor: (@x, @y, @white) ->
     bodyDef.type = b2Body.b2_kinematicBody
     bodyDef.linearVelocity = new b2Vec2 0, 2
     fixDef.shape = new b2PolygonShape
     fixDef.shape.SetAsBox(2, 0.25)
-    bodyDef.position.x = x
-    bodyDef.position.y = y
-    physicsBody = world.CreateBody(bodyDef)
-    physicsBody.CreateFixture(fixDef)
-    div = $("<div class='platform #{color}'/>")
-    playground.append div
-    super(div, physicsBody)
+    div = $("<div class='platform'/>")
+    super(div, @white)
 
   update: ->
     position = @physicsBody.GetPosition()
@@ -157,6 +165,7 @@ update = ->
   ball2.update()
   $('#position2').html "X:#{ball2.x} Y#{ball2.y}"
   platform1.update()
+  platform2.update()
   world.DrawDebugData() if DEBUG
   world.ClearForces()
 

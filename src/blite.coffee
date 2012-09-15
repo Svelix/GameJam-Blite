@@ -18,16 +18,14 @@ SCALE = 50
 DEBUG = false
 
 lastTime = null
-ball1 = null
-ball2 = null
-platform1 = null
-platform2 = null
 world = null
 gravity = new b2Vec2 0, 0
 bodyDef = null
 fixDef = null
 b2heigth = null
 b2width = null
+
+elements = []
 
 
 requestAnimFrame = (() ->
@@ -91,11 +89,12 @@ setupB2 = ->
   createStaticBox(-0.5, b2heigth, b2width + 0.5, b2heigth + 0.5)
 
 
-  ball1 = new Ball(b2width / 2 - 2, b2heigth - 2, true)
-  ball2 = new Ball(b2width / 2 + 2, b2heigth - 2, false)
+  elements.push new Ball(b2width / 2 - 2, b2heigth - 2, true)
+  elements.push new Ball(b2width / 2 + 2, b2heigth - 2, false)
 
-  platform1 = new Platform(b2width /2, -0.25, true)
-  platform2 = new Platform(b2width /2, -b2heigth /2 -0.25, false)
+  createNewPlatform()
+
+
 
 class GameObj
   constructor: (@div, @white) ->
@@ -144,8 +143,15 @@ class Platform extends GameObj
       position.y = -0.25
       position.x = Math.random() * b2width
       @physicsBody.SetPosition(position)
+
+      createNewPlatform()
     super
 
+createNewPlatform = ->
+  white = Math.random() > 0.5
+  x = Math.random() * b2width
+  y = Math.random() * -b2heigth - 0.25
+  elements.push new Platform(x, y, white)
 
 minfps = 2000
 maxfps = 0
@@ -160,12 +166,7 @@ update = ->
   lastTime = now
   world.SetGravity(gravity)
   world.Step( step ,  10 ,  10)
-  ball1.update()
-  $('#position1').html "X:#{ball1.x} Y#{ball1.y}"
-  ball2.update()
-  $('#position2').html "X:#{ball2.x} Y#{ball2.y}"
-  platform1.update()
-  platform2.update()
+  element.update() for element in elements
   world.DrawDebugData() if DEBUG
   world.ClearForces()
 

@@ -29,7 +29,6 @@ class Game
   playground = null
   width = null
   height = null
-  lastTime = null
   world = null
   gravity = new b2Vec2 0, 0
   bodyDef = null
@@ -39,16 +38,29 @@ class Game
   elements = []
 
 
+  lastTime: null
+  running:  false
+
   init: ->
     #if setupOrientationHandler()
     if setupMotionHandler()
       setupPlayground()
       setupB2()
       setupDebugDraw() if DEBUG
+      @setupButtons()
 
-  start: ->
-      lastTime = Date.now()
-      requestAnimFrame update
+  start: (event) =>
+    @lastTime = Date.now()
+    @running = true
+    requestAnimFrame @update
+
+  stop: (event) =>
+    @running = false
+
+  setupButtons: ->
+    $('#start').click @start
+    $('#stop').click @stop
+    return
 
   setupDebugDraw = ->
     canvas = $("<canvas id='canvas' style='width:#{width} height:#{height} position:absolute top:0 left:0'/>")
@@ -104,15 +116,16 @@ class Game
 
   minfps = 2000
   maxfps = 0
-  update = ->
-    requestAnimFrame update
+  update: =>
+    return unless @running
+    requestAnimFrame @update
     now = Date.now()
-    step = (now - lastTime) / 1000
+    step = (now - @lastTime) / 1000
     fps = Math.round(1/step)
     minfps = Math.min minfps, fps
     maxfps = Math.max maxfps, fps
     $('#fps').html "FPS: #{fps} min:#{minfps} max:#{maxfps}"
-    lastTime = now
+    @lastTime = now
     world.SetGravity(gravity)
     world.Step( step ,  10 ,  10)
     element.update() for element in elements
@@ -151,8 +164,6 @@ class Game
       window.addEventListener 'devicemotion',
         (event) ->
           acceleration = event.accelerationIncludingGravity
-          orientation = $ '#orientation'
-          orientation.html "X:#{acceleration.x} Y:#{acceleration.y} Z:#{acceleration.z}"
           gravity.Set(-acceleration.x, -acceleration.y)
         , false
       true
@@ -177,9 +188,6 @@ class Game
 
 
   deviceOrientationHandler = (tiltLR, tiltFB, dir, motUD) ->
-      orientation = $ '#orientation'
-      orientation.html "tiltLR:#{tiltLR} tiltFB:#{tiltFB} dir:#{dir} motUD:#{motUD} W:#{width} H:#{height}"
-
 
   class GameObj
     constructor: (@div, @white) ->
@@ -236,4 +244,3 @@ class Game
 window.onload = () ->
   game = new Game()
   game.init()
-  game.start()

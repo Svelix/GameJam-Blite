@@ -35,7 +35,8 @@ class Game
   fixDef = null
   b2heigth = null
   b2width = null
-  elements = []
+  balls = []
+  platforms = []
   topBorder = null
   levels = []
 
@@ -53,7 +54,7 @@ class Game
       createLevels()
 
   reset: (event) =>
-    element.remove() for element in elements
+    element.remove() for element in balls.concat(platforms)
 
   start: (event) =>
     @reset()
@@ -61,8 +62,8 @@ class Game
     @lastTime = Date.now()
     @running = true
 
-    elements.push new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
-    elements.push new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
+    new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
+    new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
 
     requestAnimFrame @update
 
@@ -70,6 +71,10 @@ class Game
     @running = false
 
   gameOver: ->
+    @stop()
+
+  levelEnd: ->
+    alert('Congrats!')
     @stop()
 
   setupButtons: ->
@@ -142,15 +147,17 @@ class Game
     @lastTime = now
     world.SetGravity(gravity)
     world.Step( step ,  10 ,  10)
-    element.update() for element in elements
+    element.update() for element in balls.concat(platforms)
     world.DrawDebugData() if DEBUG
     world.ClearForces()
-    @checkForGameOver()
+    @checkForLevelEnd()
     requestAnimFrame @update if @running
 
-  checkForGameOver: ->
+  checkForLevelEnd: ->
     contacts = topBorder.GetContactList()
     @gameOver() if contacts?.contact.IsTouching()
+    @levelEnd() if platforms.length == 0
+
 
   setupOrientationHandler = ->
     if window.DeviceOrientationEvent
@@ -229,8 +236,7 @@ class Game
       {@x, @y} = @physicsBody.GetPosition()
       left = @x * SCALE - @div.width()/2
       top = height - @y * SCALE - @div.height()/2
-      @div.css 'left',  left + 'px'
-      @div.css 'top', top + 'px'
+      @div.css {left, top}
 
     remove: ->
       world.DestroyBody(@physicsBody)
@@ -244,6 +250,10 @@ class Game
       fixDef.filter.groupIndex = 1
       div = $("<div class='ball'/>")
       super(div, @white)
+      balls.push @
+    remove: ->
+      balls = balls.splice balls.indexOf(@)+1, 1
+      super
 
   class Platform extends GameObj
     constructor: (x1, y1, x2, y2, speed, white) ->
@@ -258,6 +268,15 @@ class Game
       fixDef.filter.groupIndex = 0
       div = $("<div class='platform' style='width:#{w*SCALE}px; height=#{h*SCALE}px'/>")
       super(div, white)
+      platforms.push @
+    update: ->
+      position = @physicsBody.GetPosition()
+      if position.y > b2heigth + 0.25
+        @remove()
+      super
+    remove: ->
+      platforms = platforms.splice platforms.indexOf(@)+1, 1
+      super
 
   class Level
     constructor: (@nummer, @speed, @balls) ->
@@ -272,10 +291,10 @@ class Game
         x2 = right * b2width / 10
         y1 = -top * 0.5
         y2 = y1 - 0.5
-        elements.push new Platform(x1, y1, x2, y2, @speed, white)
+        new Platform(x1, y1, x2, y2, @speed, white)
 
   createLevels = ->
-    level = new Level(0, 1, 2)
+    level = new Level(1, 1, 2)
     level.addPlatform(0,6,0,true)
     level.addPlatform(4,10,5,false)
     levels[0] = level

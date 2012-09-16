@@ -40,9 +40,16 @@ class Game
   topBorder = null
   levels = []
 
+  createAudio = (src) ->
+    audio = new Audio()
+    audio.src = src
+    audio
+
+  background = createAudio('sound/background.wav')
 
   lastTime: null
   running:  false
+
 
   init: ->
     #if setupOrientationHandler()
@@ -81,6 +88,7 @@ class Game
     @reset()
     @currentLevel = levels[0]
     @currentLevel.load()
+    background.play()
 
     setTimeout @startCountDown, 1000
 
@@ -99,7 +107,8 @@ class Game
     @stop()
 
   levelEnd: ->
-    $('#taunt').html @currentLevel.taunt
+    @taunt @currentLevel.taunt
+    @currentLevel.sound.play()
     @stop()
 
   setupButtons: ->
@@ -304,7 +313,7 @@ class Game
       super
 
   class Level
-    constructor: (@nummer, @speed, @balls, @taunt) ->
+    constructor: (@nummer, @speed, @balls, @taunt, @sound) ->
       @platforms = []
 
     addPlatform: (left, right, top, white) ->
@@ -319,7 +328,7 @@ class Game
         new Platform(x1, y1, x2, y2, @speed, white)
 
   createLevels = ->
-    level = new Level(1, 1, 2, "Good!")
+    level = new Level(1, 1, 2, "Good!", createAudio("sound/1.wav"))
     level.addPlatform(0,6,0,true)
     level.addPlatform(4,10,5,false)
     levels[0] = level

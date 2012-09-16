@@ -15,7 +15,7 @@ SCALE = 50
 DEBUG = false
 
 # set to 0 !!
-STARTLEVEL = 4
+STARTLEVEL = 0
 
 requestAnimFrame = (() ->
   window.requestAnimationFrame       ||
@@ -384,19 +384,19 @@ class Game
     level.addPlatform(7 , 10  , 15 , true)
     levels.push level
 
-    level = new Level(6, 1, 4, "Amazing!", createAudio("sound/6.wav"))
+    level = new Level(6, 1.5, 4, "Amazing!", createAudio("sound/6.wav"))
     level.addPlatform(0,6,0,true)
     level.addPlatform(4,10,5,false)
     levels.push level
 
-    level = new Level(7, 1, 4, "Extreme!", createAudio("sound/7.wav"))
+    level = new Level(7, 1.5, 4, "Extreme!", createAudio("sound/7.wav"))
     level.addPlatform(0 , 5  , 0 , false)
     level.addPlatform(5 , 10 , 5 , true)
     level.addPlatform(2 , 8  , 8 , false)
     level.addPlatform(0 , 7  , 9 , true)
     levels.push level
 
-    level = new Level(8, 1, 4, "Fantastic!", createAudio("sound/8.wav"))
+    level = new Level(8, 1.5, 4, "Fantastic!", createAudio("sound/8.wav"))
     level.addPlatform(0 , 5  , 0 , true)
     level.addPlatform(5 , 10 , 0 , false)
     level.addPlatform(0 , 5  , 7 , false)
@@ -405,7 +405,7 @@ class Game
     level.addPlatform(5 , 10 , 14 , false)
     levels.push level
 
-    level = new Level(9, 1, 4, "Splendid!", createAudio("sound/9.wav"))
+    level = new Level(9, 1.6, 4, "Splendid!", createAudio("sound/9.wav"))
     level.addPlatform(0 , 5  , 0 , true)
     level.addPlatform(0 , 5  , 4 , false)
     level.addPlatform(5 , 10 , 4 , true)

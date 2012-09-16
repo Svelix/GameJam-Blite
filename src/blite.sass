@@ -32,9 +32,11 @@ body
 
 .ball.black
   +background-image(radial-gradient(32px 14px, white 2px, black 18px))
+  box-shadow: 3px 3px 3px #333
 
 .ball.white
   +background-image(radial-gradient(32px 14px, black 2px, white 18px))
+  box-shadow: 3px 3px 3px black
 
 .platform
   width: 200px
@@ -44,9 +46,11 @@ body
 
 .platform.black
   background-color: black
+  box-shadow: 3px 3px 3px #333
 
 .platform.white
   background-color: white
+  box-shadow: 3px 3px 3px black
 
 #front
   width: 100%
@@ -82,6 +86,7 @@ body
   text-align: center
   font-size: 60pt
   color: white
+  text-shadow: 1px 1px 1px black
   +animation(taunt 1s 0.2s forwards)
 
 .countdown
@@ -91,11 +96,13 @@ body
   text-align: center
   font-size: 60pt
   color: white
+  text-shadow: 1px 1px 1px black
   +animation(taunt 1s 0.1s forwards)
 
 #gameover
   color: black
   display: none
+  text-shadow: 1px 1px 1px white
 
 #gameover.over
   display: block
@@ -111,9 +118,18 @@ body
 #start.started
   +animation(bounceOutUp 1s forwards)
 
+span.white
+  color: white
+  text-shadow: 2px 2px 2px black
+
+span.black
+  color: black
+  text-shadow: 2px 2px 2px white
+
 button
   display: inline-block
   font-size: 40pt
+  text-shadow: 1px 1px 1px white
 
 button#start
   position: relative

@@ -12,7 +12,7 @@ b2DebugDraw = Box2D.Dynamics.b2DebugDraw
 MAXASPECT = 0.75
 MINASPECT = 0.5
 SCALE = 50
-DEBUG = true
+DEBUG = false
 
 requestAnimFrame = (() ->
   window.requestAnimationFrame       ||
@@ -56,11 +56,17 @@ class Game
   reset: (event) =>
     element.remove() for element in balls.concat(platforms)
 
+  taunt: (text) ->
+    $('.taunt').remove()
+    $('#front').append($("<div class='taunt'>#{text}</div>"))
+
   start: (event) =>
     @reset()
-    levels[0].load()
+    @currentLevel = levels[0]
+    @currentLevel.load()
     @lastTime = Date.now()
     @running = true
+    @taunt "Level: #{Math.round(Math.random() * 10)}"
 
     new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
     new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
@@ -74,7 +80,7 @@ class Game
     @stop()
 
   levelEnd: ->
-    alert('Congrats!')
+    $('#taunt').html @currentLevel.taunt
     @stop()
 
   setupButtons: ->
@@ -279,7 +285,7 @@ class Game
       super
 
   class Level
-    constructor: (@nummer, @speed, @balls) ->
+    constructor: (@nummer, @speed, @balls, @taunt) ->
       @platforms = []
 
     addPlatform: (left, right, top, white) ->
@@ -294,7 +300,7 @@ class Game
         new Platform(x1, y1, x2, y2, @speed, white)
 
   createLevels = ->
-    level = new Level(1, 1, 2)
+    level = new Level(1, 1, 2, "Good!")
     level.addPlatform(0,6,0,true)
     level.addPlatform(4,10,5,false)
     levels[0] = level

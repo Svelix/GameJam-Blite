@@ -221,12 +221,10 @@ class Game
         @div.addClass('white')
         fixDef.filter.categoryBits = 0x01
         fixDef.filter.maskBits = 0x01
-        fixDef.filter.groupIndex = 1
       else
         @div.addClass('black')
         fixDef.filter.categoryBits = 0x02
         fixDef.filter.maskBits = 0x02
-        fixDef.filter.groupIndex = 2
       @physicsBody = world.CreateBody(bodyDef)
       @physicsBody.CreateFixture(fixDef)
       playground.append @div
@@ -247,6 +245,7 @@ class Game
       bodyDef.type = b2Body.b2_dynamicBody
       bodyDef.linearVelocity = new b2Vec2 0, 0
       fixDef.shape = new b2CircleShape(0.5)
+      fixDef.filter.groupIndex = 1
       div = $("<div class='ball'/>")
       super(div, @white)
 
@@ -256,6 +255,7 @@ class Game
       bodyDef.linearVelocity = new b2Vec2 0, 2
       fixDef.shape = new b2PolygonShape
       fixDef.shape.SetAsBox(2, 0.25)
+      fixDef.filter.groupIndex = 0
       div = $("<div class='platform'/>")
       super(div, @white)
 

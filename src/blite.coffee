@@ -64,6 +64,7 @@ class Game
 
   reset: (event) =>
     element.remove() for element in balls.concat(platforms)
+    $('#gameover').removeClass 'over'
 
   addAnimationElement: (element) ->
     element.bind "animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd",
@@ -86,10 +87,12 @@ class Game
 
 
   start: (event) =>
+    $('#start').addClass('started')
     @taunt "Level: #{Math.round(Math.random() * 10)}"
     @reset()
     @currentLevel = levels[0]
     @currentLevel.load()
+    element.update() for element in balls.concat(platforms)
     background.play()
 
     setTimeout @startCountDown, 1000
@@ -98,8 +101,6 @@ class Game
     @countdown 3, =>
       @lastTime = Date.now()
       @running = true
-      new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
-      new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
       requestAnimFrame @update
 
   stop: (event) =>
@@ -108,6 +109,7 @@ class Game
   gameOver: ->
     background.pause()
     gameover.play()
+    $('#gameover').addClass 'over'
     @stop()
 
   levelEnd: ->
@@ -116,8 +118,7 @@ class Game
     @stop()
 
   setupButtons: ->
-    $('#start').click @start
-    $('#stop').click @stop
+    $('.start').click @start
     return
 
   setupDebugDraw = ->
@@ -173,15 +174,9 @@ class Game
 
 
 
-  minfps = 2000
-  maxfps = 0
   update: =>
     now = Date.now()
     step = (now - @lastTime) / 1000
-    fps = Math.round(1/step)
-    minfps = Math.min minfps, fps
-    maxfps = Math.max maxfps, fps
-    $('#fps').html "FPS: #{fps} min:#{minfps} max:#{maxfps}"
     @lastTime = now
     world.SetGravity(gravity)
     world.Step( step ,  10 ,  10)
@@ -330,6 +325,8 @@ class Game
         y1 = -top * 0.5
         y2 = y1 - 0.5
         new Platform(x1, y1, x2, y2, @speed, white)
+      new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
+      new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
 
   createLevels = ->
     level = new Level(1, 1, 2, "Good!", createAudio("sound/1.wav"))

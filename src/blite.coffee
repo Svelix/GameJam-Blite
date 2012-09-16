@@ -37,6 +37,7 @@ class Game
   b2width = null
   elements = []
   topBorder = null
+  levels = []
 
 
   lastTime: null
@@ -49,19 +50,20 @@ class Game
       setupB2()
       setupDebugDraw() if DEBUG
       @setupButtons()
+      createLevels()
 
   reset: (event) =>
     element.remove() for element in elements
 
   start: (event) =>
     @reset()
+    levels[0].load()
     @lastTime = Date.now()
     @running = true
 
     elements.push new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
     elements.push new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
 
-    createNewPlatform()
     requestAnimFrame @update
 
   stop: (event) =>
@@ -127,12 +129,6 @@ class Game
     fixDef.isSensor = false
 
 
-
-  createNewPlatform = ->
-    white = Math.random() > 0.5
-    x = Math.random() * b2width
-    y = Math.random() * -b2heigth - 0.25
-    elements.push new Platform(x, y, white)
 
   minfps = 2000
   maxfps = 0
@@ -250,24 +246,40 @@ class Game
       super(div, @white)
 
   class Platform extends GameObj
-    constructor: (@x, @y, @white) ->
+    constructor: (x1, y1, x2, y2, speed, white) ->
+      @x = (x1 + x2) / 2
+      @y = (y1 + y2) / 2
+      w = Math.abs(x2 - x1)
+      h = Math.abs(y2 - y1)
       bodyDef.type = b2Body.b2_kinematicBody
-      bodyDef.linearVelocity = new b2Vec2 0, 2
+      bodyDef.linearVelocity = new b2Vec2 0, speed
       fixDef.shape = new b2PolygonShape
-      fixDef.shape.SetAsBox(2, 0.25)
+      fixDef.shape.SetAsBox(w/2, h/2)
       fixDef.filter.groupIndex = 0
-      div = $("<div class='platform'/>")
-      super(div, @white)
+      div = $("<div class='platform' style='width:#{w*SCALE}px; height=#{h*SCALE}px'/>")
+      super(div, white)
 
-    update: ->
-      position = @physicsBody.GetPosition()
-      if position.y > b2heigth + 0.25
-        position.y = -0.25
-        position.x = Math.random() * b2width
-        @physicsBody.SetPosition(position)
+  class Level
+    constructor: (@nummer, @speed, @balls) ->
+      @platforms = []
 
-        #createNewPlatform()
-      super
+    addPlatform: (left, right, top, white) ->
+      @platforms.push {left, right, top, white}
+
+    load: ->
+      for {left, right, top, white} in @platforms
+        x1 = left * b2width / 10
+        x2 = right * b2width / 10
+        y1 = -top * 0.5
+        y2 = y1 - 0.5
+        elements.push new Platform(x1, y1, x2, y2, @speed, white)
+
+  createLevels = ->
+    level = new Level(0, 1, 2)
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels[0] = level
+
 
 
 window.onload = () ->

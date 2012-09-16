@@ -50,9 +50,18 @@ class Game
       setupDebugDraw() if DEBUG
       @setupButtons()
 
+  reset: (event) =>
+    element.remove() for element in elements
+
   start: (event) =>
+    @reset()
     @lastTime = Date.now()
     @running = true
+
+    elements.push new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
+    elements.push new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
+
+    createNewPlatform()
     requestAnimFrame @update
 
   stop: (event) =>
@@ -118,10 +127,6 @@ class Game
     fixDef.isSensor = false
 
 
-    elements.push new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
-    elements.push new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
-
-    createNewPlatform()
 
   createNewPlatform = ->
     white = Math.random() > 0.5
@@ -233,9 +238,14 @@ class Game
       @div.css 'left',  left + 'px'
       @div.css 'top', top + 'px'
 
+    remove: ->
+      world.DestroyBody(@physicsBody)
+      @div.remove()
+
   class Ball extends GameObj
     constructor: (@game, @x, @y, @white) ->
       bodyDef.type = b2Body.b2_dynamicBody
+      bodyDef.linearVelocity = new b2Vec2 0, 0
       fixDef.shape = new b2CircleShape(0.5)
       div = $("<div class='ball'/>")
       super(div, @white)

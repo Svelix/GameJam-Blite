@@ -46,6 +46,8 @@ class Game
     audio
 
   background = createAudio('sound/background.wav')
+  background.loop = true
+  gameover = createAudio('sound/gameover.wav')
 
   lastTime: null
   running:  false
@@ -104,6 +106,8 @@ class Game
     @running = false
 
   gameOver: ->
+    background.pause()
+    gameover.play()
     @stop()
 
   levelEnd: ->

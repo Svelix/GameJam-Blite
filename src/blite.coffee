@@ -56,22 +56,41 @@ class Game
   reset: (event) =>
     element.remove() for element in balls.concat(platforms)
 
+  addAnimationElement: (element) ->
+    element.bind "animationend webkitAnimationEnd oAnimationEnd MSAnimationEnd",
+      -> element.remove()
+    $('#front').append(element)
+
   taunt: (text) ->
-    $('.taunt').remove()
-    $('#front').append($("<div class='taunt'>#{text}</div>"))
+    @addAnimationElement $("<div class='taunt'>#{text}</div>")
+
+  countdown: (time, func) ->
+    if time <= 0
+      @addAnimationElement $("<div class='countdown'>Go!</div>")
+      func()
+    else
+      @addAnimationElement $("<div class='countdown'>#{time}</div>")
+      setTimeout( 
+        => @countdown(time-1, func),
+        1000)
+
+
 
   start: (event) =>
+    @taunt "Level: #{Math.round(Math.random() * 10)}"
     @reset()
     @currentLevel = levels[0]
     @currentLevel.load()
-    @lastTime = Date.now()
-    @running = true
-    @taunt "Level: #{Math.round(Math.random() * 10)}"
 
-    new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
-    new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
+    setTimeout @startCountDown, 1000
 
-    requestAnimFrame @update
+  startCountDown: =>
+    @countdown 3, =>
+      @lastTime = Date.now()
+      @running = true
+      new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
+      new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
+      requestAnimFrame @update
 
   stop: (event) =>
     @running = false

@@ -12,7 +12,7 @@ b2DebugDraw = Box2D.Dynamics.b2DebugDraw
 MAXASPECT = 0.75
 MINASPECT = 0.5
 SCALE = 50
-DEBUG = false
+DEBUG = true
 
 requestAnimFrame = (() ->
   window.requestAnimationFrame       ||
@@ -36,6 +36,7 @@ class Game
   b2heigth = null
   b2width = null
   elements = []
+  topBorder = null
 
 
   lastTime: null
@@ -57,17 +58,23 @@ class Game
   stop: (event) =>
     @running = false
 
+  gameOver: ->
+    @stop()
+
   setupButtons: ->
     $('#start').click @start
     $('#stop').click @stop
     return
 
   setupDebugDraw = ->
-    canvas = $("<canvas id='canvas' style='width:#{width} height:#{height} position:absolute top:0 left:0'/>")
+    canvas = $("<canvas id='canvas' style='width:#{width}px; height:#{height}px; position:absolute; top:0; left:0;'/>")
     playground.append canvas
     debugDraw = new b2DebugDraw()
-    debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"))
-    debugDraw.SetDrawScale(5)
+    context = document.getElementById("canvas").getContext("2d")
+    context.canvas.width = width
+    context.canvas.height = height
+    debugDraw.SetSprite(context)
+    debugDraw.SetDrawScale(SCALE)
     debugDraw.SetFillAlpha(0.3)
     debugDraw.SetLineThickness(1.0)
     debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit)
@@ -86,7 +93,7 @@ class Game
     b2width = width / SCALE
     b2heigth = height / SCALE
 
-    createStaticBox = (x1, y1, x2 , y2) ->
+    createStaticBox = (x1, y1, x2 , y2, sensor = false) ->
       bodyDef.type = b2Body.b2_staticBody
       bodyDef.position.x = (x1 + x2)/2
       bodyDef.position.y = (y1 + y2)/2
@@ -94,17 +101,25 @@ class Game
       fixDef.shape.SetAsBox((x2-x1)/2, (y2-y1)/2)
       fixDef.filter.maskBits = 0xFF
       fixDef.filter.categoryBits = 0xFF
-      world.CreateBody(bodyDef).CreateFixture(fixDef)
+      fixDef.isSensor = sensor
+      body = world.CreateBody(bodyDef)
+      body.CreateFixture(fixDef)
+      body
 
     # create ground and walls
+    # bottom
     createStaticBox(-0.5, -0.5, b2width + 0.5, 0)
+    # left
     createStaticBox(-0.5, 0, 0, b2heigth)
+    # right
     createStaticBox(b2width, 0, b2width+0.5, b2heigth)
-    createStaticBox(-0.5, b2heigth, b2width + 0.5, b2heigth + 0.5)
+    # top
+    topBorder = createStaticBox(-0.5, b2heigth, b2width + 0.5, b2heigth + 0.5, true)
+    fixDef.isSensor = false
 
 
-    elements.push new Ball(b2width / 2 - 2, b2heigth - 2, true)
-    elements.push new Ball(b2width / 2 + 2, b2heigth - 2, false)
+    elements.push new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
+    elements.push new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
 
     createNewPlatform()
 
@@ -117,8 +132,6 @@ class Game
   minfps = 2000
   maxfps = 0
   update: =>
-    return unless @running
-    requestAnimFrame @update
     now = Date.now()
     step = (now - @lastTime) / 1000
     fps = Math.round(1/step)
@@ -131,6 +144,12 @@ class Game
     element.update() for element in elements
     world.DrawDebugData() if DEBUG
     world.ClearForces()
+    @checkForGameOver()
+    requestAnimFrame @update if @running
+
+  checkForGameOver: ->
+    contacts = topBorder.GetContactList()
+    @gameOver() if contacts?.contact.IsTouching()
 
   setupOrientationHandler = ->
     if window.DeviceOrientationEvent
@@ -215,7 +234,7 @@ class Game
       @div.css 'top', top + 'px'
 
   class Ball extends GameObj
-    constructor: (@x, @y, @white) ->
+    constructor: (@game, @x, @y, @white) ->
       bodyDef.type = b2Body.b2_dynamicBody
       fixDef.shape = new b2CircleShape(0.5)
       div = $("<div class='ball'/>")

@@ -88,12 +88,16 @@ class Game
 
   start: (event) =>
     $('#start').addClass('started')
-    @taunt "Level: #{Math.round(Math.random() * 10)}"
+    @level = 0
+    background.play()
+    @startLevel()
+
+  startLevel: =>
+    @taunt "Level: #{@level + 1}"
     @reset()
-    @currentLevel = levels[0]
+    @currentLevel = levels[@level % 10]
     @currentLevel.load()
     element.update() for element in balls.concat(platforms)
-    background.play()
 
     setTimeout @startCountDown, 1000
 
@@ -116,6 +120,8 @@ class Game
     @taunt @currentLevel.taunt
     @currentLevel.sound.play()
     @stop()
+    @level = (@level + 1)
+    setTimeout @startLevel, 1000
 
   setupButtons: ->
     $('.start').click @start
@@ -181,6 +187,7 @@ class Game
     world.SetGravity(gravity)
     world.Step( step ,  10 ,  10)
     element.update() for element in balls.concat(platforms)
+    #$('#debug').html platforms.length if DEBUG
     world.DrawDebugData() if DEBUG
     world.ClearForces()
     @checkForLevelEnd()
@@ -285,7 +292,7 @@ class Game
       super(div, @white)
       balls.push @
     remove: ->
-      balls = balls.splice balls.indexOf(@)+1, 1
+      balls.splice balls.indexOf(@), 1
       super
 
   class Platform extends GameObj
@@ -307,8 +314,9 @@ class Game
       if position.y > b2heigth + 0.25
         @remove()
       super
-    remove: ->
-      platforms = platforms.splice platforms.indexOf(@)+1, 1
+    remove: =>
+      index = platforms.indexOf(@)
+      platforms.splice index, 1
       super
 
   class Level
@@ -324,7 +332,7 @@ class Game
         x2 = right * b2width / 10
         y1 = -top * 0.5
         y2 = y1 - 0.5
-        new Platform(x1, y1, x2, y2, @speed, white)
+        new Platform(x1, y1, x2, y2, @speed * 2, white)
       new Ball(@, b2width / 2 - 2, b2heigth - 2, true)
       new Ball(@, b2width / 2 + 2, b2heigth - 2, false)
 
@@ -332,8 +340,56 @@ class Game
     level = new Level(1, 1, 2, "Good!", createAudio("sound/1.wav"))
     level.addPlatform(0,6,0,true)
     level.addPlatform(4,10,5,false)
-    levels[0] = level
+    levels.push level
 
+    level = new Level(2, 1, 2, "Sweet!", createAudio("sound/2.wav"))
+    level.addPlatform(0 , 5  , 0 , true)
+    level.addPlatform(5 , 10 , 0 , false)
+    level.addPlatform(0 , 5  , 7 , false)
+    level.addPlatform(5 , 10 , 7 , true)
+    level.addPlatform(0 , 5  , 14 , true)
+    level.addPlatform(5 , 10 , 14 , false)
+    levels.push level
+
+    level = new Level(3, 1, 2, "Great!", createAudio("sound/3.wav"))
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels.push level
+
+    level = new Level(4, 1, 2, "Super!", createAudio("sound/4.wav"))
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels.push level
+
+    level = new Level(5, 1, 2, "WOW!", createAudio("sound/5.wav"))
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels.push level
+
+    level = new Level(6, 1, 2, "Amazing!", createAudio("sound/6.wav"))
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels.push level
+
+    level = new Level(7, 1, 2, "Extreme!", createAudio("sound/7.wav"))
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels.push level
+
+    level = new Level(8, 1, 2, "Fantastic!", createAudio("sound/8.wav"))
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels.push level
+
+    level = new Level(9, 1, 2, "Splendid!", createAudio("sound/9.wav"))
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels.push level
+
+    level = new Level(10, 1, 2, "No Way!", createAudio("sound/10.wav"))
+    level.addPlatform(0,6,0,true)
+    level.addPlatform(4,10,5,false)
+    levels.push level
 
 
 window.onload = () ->
